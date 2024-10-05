@@ -20,10 +20,26 @@ try {
     die("Error en la conexión: " . $e->getMessage());
 }
 
+// Si se recibe un id_alumno, se busca el alumno en la base de datos
+$id_alumno = $_GET['id_alumno'] ?? 0;
+$alumno = [
+    'Nombre' => '',
+    'Apellido' => '',
+    'Carne' => '',
+    'Curso' => '',
+    'Nota' => ''
+];
+
+if ($id_alumno) {
+    $stmt = $pdo->prepare("SELECT * FROM tblalumno WHERE Id_Alumno = :id_alumno");
+    $stmt->bindParam(':id_alumno', $id_alumno, PDO::PARAM_INT);
+    $stmt->execute();
+    $alumno = $stmt->fetch();
+}
+
 // Procesar el formulario si se ha enviado
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // Obtener datos del formulario
-    $id_alumno = $_POST['id_alumno'] ?? 0; // Si es un nuevo alumno, el ID es 0
+    $id_alumno = $_POST['id_alumno'] ?? 0;
     $nombre = $_POST['nombre'];
     $apellido = $_POST['apellido'];
     $carne = $_POST['carne'];
@@ -43,11 +59,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt->execute();
         header("Location: mostrar_alumnos.php");
         exit;
-   } catch (PDOException $e) {
+    } catch (PDOException $e) {
         echo "Error: " . $e->getMessage();
     }
 } else {
-    // Consulta para obtener los cursos
     $query = "SELECT Id_Curso, Curso FROM tblcurso";
     $stmt = $pdo->prepare($query);
     $stmt->execute();
@@ -59,34 +74,36 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Agregar Alumno</title>
+        <title><?php echo $id_alumno ? 'Editar Alumno' : 'Agregar Alumno'; ?></title>
     </head>
     <body>
-        <h1>Agregar Alumno</h1>
+        <h1><?php echo $id_alumno ? 'Editar Alumno' : 'Agregar Alumno'; ?></h1>
         <form action="" method="POST">
-            <input type="hidden" name="id_alumno" value="0">
+            <input type="hidden" name="id_alumno" value="<?php echo $id_alumno; ?>">
             <label for="nombre">Nombre:</label>
-            <input type="text" id="nombre" name="nombre" required><br><br>
+            <input type="text" id="nombre" name="nombre" value="<?php echo $alumno['Nombre']; ?>" required><br><br>
 
             <label for="apellido">Apellido:</label>
-            <input type="text" id="apellido" name="apellido" required><br><br>
+            <input type="text" id="apellido" name="apellido" value="<?php echo $alumno['Apellido']; ?>" required><br><br>
 
             <label for="carne">Carne:</label>
-            <input type="number" id="carne" name="carne" required><br><br>
+            <input type="number" id="carne" name="carne" value="<?php echo $alumno['Carne']; ?>" required><br><br>
 
             <label for="curso">Curso:</label>
             <select id="curso" name="curso" required>
                 <option value="">Seleccione un curso</option>
                 <?php foreach ($cursos as $curso): ?>
-                    <option value="<?php echo $curso['Id_Curso']; ?>"><?php echo $curso['Curso']; ?></option>
+                    <option value="<?php echo $curso['Id_Curso']; ?>" <?php echo $curso['Id_Curso'] == $alumno['Curso'] ? 'selected' : ''; ?>>
+                        <?php echo $curso['Curso']; ?>
+                    </option>
                 <?php endforeach; ?>
             </select><br><br>
 
             <label for="nota">Nota:</label>
-            <input type="number" id="nota" name="nota" step="0.1" required><br><br>
+            <input type="number" id="nota" name="nota" step="0.1" value="<?php echo $alumno['Nota']; ?>" required><br><br>
 
-            <button type="submit">Grabar</button>
-            <button type="button" onclick="window.history.back();">Cancelar</button>
+            <button type="submit"><?php echo $id_alumno ? 'Actualizar' : 'Grabar'; ?></button>
+            <button type="button" onclick="window.location.href='mostrar_alumnos.php';">Cancelar</button>
         </form>
     </body>
     </html>
