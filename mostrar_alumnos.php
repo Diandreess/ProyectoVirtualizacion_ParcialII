@@ -27,7 +27,7 @@ if (isset($_POST['eliminar_id'])) {
 }
 
 // Consulta para obtener los alumnos
-$query = "SELECT Id_Alumno, Nombre, Apellido, Carne, Curso, Nota FROM tblalumno";
+$query = "SELECT a.Id_Alumno, a.Nombre, a.Apellido, a.Carne, c.Curso, a.Nota FROM tblalumno a JOIN tblcurso c ON a.Curso = c.Id_Curso";
 $stmt = $pdo->prepare($query);
 $stmt->execute();
 $alumnos = $stmt->fetchAll(PDO::FETCH_ASSOC);

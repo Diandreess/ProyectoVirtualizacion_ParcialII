@@ -1,0 +1,34 @@
+docker run --name nginx -p 80:80 -d -v ~/nginx-html:/usr/share/nginx/html php:7.4-apache
+cd nginx-html
+sudo vim index.php
+*Pegar el contenido de index
+sudo vim mostrar_alumnos.php
+*Pegar el contenido de mostrar_alumnos
+cd ..
+chmod -R 777 ~/nginx-html
+docker exec -it nginx /bin/bash
+*Todo Junto*
+echo "<VirtualHost *:80>
+    DocumentRoot /usr/share/nginx/html
+
+    <Directory /usr/share/nginx/html>
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Require all granted
+    </Directory>
+
+    ErrorLog \${APACHE_LOG_DIR}/error.log
+    CustomLog \${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>" > /etc/apache2/sites-available/000-default.conf
+*Todo Junto*
+service apache2 restart
+docker start -ID del docker-
+docker exec -it nginx bash
+*Todo Junto*
+apt-get update && apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd \
+    && docker-php-ext-install pdo pdo_mysql
+*Tod Junto*
+exit
+docker restart nginx
